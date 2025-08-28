@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Pisto — Tous tes abonnements à 2 €</title>
+<style>
+  :root{
+    --bg:#0d1016; --panel:#141924; --panel-2:#0f141d;
+    --text:#e9edf5; --muted:#a9b2c3; --stroke:rgba(255,255,255,.08);
+    --orange:#ff7a1a; --orange-2:#ff9b39; --radius:28px; --success:#22c55e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Inter,system-ui,sans-serif}
+  .wrap{max-width:1200px;margin:0 auto;padding:24px}
+
+  /* Header */
+  header{position:sticky;top:0;z-index:40;backdrop-filter:saturate(140%) blur(10px);
+    background:linear-gradient(180deg,rgba(13,16,22,.9),rgba(13,16,22,.6));border-bottom:1px solid var(--stroke)}
+  .nav{display:flex;align-items:center;justify-content:space-between}
+  .brand{display:none}
+  .btn{cursor:pointer;-webkit-appearance:none;appearance:none;border:none;outline:none;
+    border-radius:14px;padding:12px 16px;font-weight:600;letter-spacing:.2px;color:var(--text);
+    background:rgba(255,255,255,.06);border:1px solid var(--stroke);
+    transition:all .25s ease, transform .08s ease; text-decoration:none}
+  .btn:hover{background:rgba(255,255,255,.1)} .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:transparent;border:1px solid var(--stroke)}
+  .btn.ghost:hover{background:rgba(255,255,255,.07)}
+  .btn.primary{background:linear-gradient(180deg,var(--orange),var(--orange-2));border:0;color:#0b0c0f;
+    box-shadow:0 12px 38px rgba(255,122,26,.35)}
+  .btn.primary:hover{filter:saturate(105%);box-shadow:0 16px 44px rgba(255,122,26,.42)}
+  .btn.disabled,.btn:disabled{opacity:.5;cursor:not-allowed;pointer-events:none;background:rgba(255,255,255,.06);
+    color:var(--muted);border:1px solid var(--stroke);box-shadow:none}
+
+  /* Hero */
+  .hero{padding:28px 0 22px;text-align:center}
+  .hero .logo-xl{width:220px;height:auto;margin:0 auto 12px;display:block}
+  .hero h1{font-size:clamp(36px,6vw,64px);margin:6px 0 8px;font-weight:800}
+  .hero h1 .neon{color:var(--orange);text-shadow:0 0 12px rgba(255,122,26,.7),0 0 32px rgba(255,122,26,.35)}
+  .hero p{color:var(--muted)}
+
+  /* Marquee logos */
+  .marquee-shell{overflow:hidden;margin:20px 0;mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+  .marquee{display:flex;gap:24px;animation:scroll 24s linear infinite}
+  .pill{flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:var(--panel-2);
+    border-radius:18px;padding:12px 18px;border:1px solid var(--stroke)}
+  .pill img{width:40px;height:40px;object-fit:contain}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* Searchbar */
+  .searchbar{max-width:720px;margin:12px auto 0;position:relative}
+  .searchbar input{width:100%;border-radius:16px;background:var(--panel-2);border:1px solid var(--stroke);
+    padding:14px 46px;color:var(--text);outline:none}
+  .searchbar .icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);opacity:.7}
+  .searchbar .kbd{position:absolute;right:12px;top:50%;transform:translateY(-50%);opacity:.5;font-size:12px;
+    border:1px solid var(--stroke);border-radius:8px;padding:4px 6px}
+
+  /* Sections / Grid */
+  .section{padding:8px 0 64px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  @media(max-width:1024px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:640px){
+    .wrap{padding:18px}
+    header .nav{justify-content:center;gap:8px}
+    .btn{padding:10px 12px}
+    .hero{padding:16px 0 14px}
+    .hero .logo-xl{width:168px;margin-bottom:8px}
+    .hero h1{margin:4px 0 6px}
+    .marquee-shell,.searchbar{max-width:100%;margin-left:auto;margin-right:auto}
+    .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;justify-items:center}
+    .tile{width:100%;padding:16px}
+    .tile .logo{width:76px;height:76px}
+  }
+  @media(max-width:360px){.grid{grid-template-columns:1fr}}
+
+  .tile{position:relative;border-radius:var(--radius);background:var(--panel-2);border:1px solid var(--stroke);
+    padding:22px;text-align:center}
+  .tile .logo{width:90px;height:90px;margin:0 auto 10px;border-radius:20px;background:var(--panel);
+    display:flex;align-items:center;justify-content:center}
+  .tile .logo img{width:100%;height:100%;object-fit:contain}
+  .tile h3{margin:6px 0 6px;font-size:20px}
+  .tile p{color:var(--muted);font-size:14px}
+  .price{display:flex;justify-content:center;gap:10px;margin-top:10px}
+  .was{text-decoration:line-through;color:var(--muted)}
+  .now{font-weight:800;background:linear-gradient(180deg,var(--orange),var(--orange-2));color:#0b0c0f;
+    padding:6px 12px;border-radius:999px}
+  .cta-row{display:flex;justify-content:center;gap:8px;margin-top:10px}
+
+  /* Ribbons */
+  .ribbon{position:absolute;top:14px;left:-10px;background:linear-gradient(180deg,var(--orange),var(--orange-2));
+    color:#0b0c0f;font-weight:800;padding:6px 12px;border-radius:14px;box-shadow:0 10px 28px rgba(255,122,26,.35)}
+  .ribbon.danger{background:linear-gradient(180deg,#ff6b6b,#ff3d3d);color:#080a0f}
+
+  /* Router pages */
+  .page{display:none}.page.active{display:block}
+
+  /* Product page */
+  .product{display:grid;grid-template-columns:1.2fr .8fr;gap:24px}
+  @media(max-width:980px){.product{grid-template-columns:1fr}}
+  .card{background:var(--panel-2);border:1px solid var(--stroke);border-radius:var(--radius);padding:24px}
+  .prod-head{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+  .prod-head .logo{width:96px;height:96px;border-radius:24px;background:var(--panel);
+    display:flex;align-items:center;justify-content:center;border:1px solid var(--stroke)}
+  .prod-head img{width:100%;height:100%;object-fit:contain}
+  .features{display:grid;gap:10px;margin:14px 0}
+
+  /* Avis (défilement horizontal) */
+  .reviews{overflow:hidden}
+  .reviews-track{display:flex;gap:16px;animation:rev 32s linear infinite}
+  .review{flex:0 0 320px;background:var(--panel);border:1px solid var(--stroke);border-radius:18px;padding:14px}
+  .stars{color:#ffb300;letter-spacing:1px;margin-bottom:6px}
+  @keyframes rev{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* Cart */
+  .cart-items{display:flex;flex-direction:column;gap:12px}
+  .line{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--panel);
+    border:1px solid var(--stroke);border-radius:18px;padding:12px 14px}
+  .x{width:26px;height:26px;border-radius:999px;background:rgba(255,255,255,.06);
+    border:1px solid var(--stroke);display:grid;place-items:center;cursor:pointer}
+  .checkout-row{display:flex;gap:10px;margin-top:16px;align-items:center;flex-wrap:wrap}
+  .sum{background:var(--panel);border:1px solid var(--stroke);border-radius:999px;padding:10px 14px}
+  .badge{border:1px solid var(--stroke);border-radius:999px;padding:8px 12px;opacity:.85}
+  .badge.success{border-color:rgba(34,197,94,.25); background:rgba(34,197,94,.12); color:var(--success)}
+
+  /* Notices */
+  .notice{position:relative;display:flex;gap:12px;align-items:flex-start;
+    background:linear-gradient(180deg,#2a1216,#1b0f12);border:1px solid rgba(255,82,82,.38);
+    border-radius:16px;padding:12px 14px;color:#ffd9de;box-shadow:0 10px 24px rgba(255,82,82,.08)}
+  .notice strong{color:#ffb3bb}
+  .notice .icon{flex:0 0 auto;opacity:.95}
+  .notice u{text-underline-offset:2px}
+  .notice.alt{margin-top:10px;background:linear-gradient(180deg,#2b230c,#171308);
+    border-color:rgba(255,193,7,.35);color:#ffecb5}
+  .notice.alt strong{color:#ffe082}
+
+  /* Modal auth */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;
+    padding:20px;z-index:100}
+  .modal.open{display:flex}
+  .dialog{width:min(520px,100%);background:var(--panel-2);border:1px solid var(--stroke);border-radius:20px;padding:20px}
+  .dialog h3{margin:0 0 8px}
+  .form-row{display:flex;flex-direction:column;gap:8px;margin:8px 0}
+  .input{border-radius:12px;background:#0e131b;border:1px solid var(--stroke);padding:12px 14px;color:var(--text)}
+  .aux{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+  .aux a{color:var(--muted);text-decoration:none}.aux a:hover{color:var(--text)}
+
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.25);
+    border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <div class="brand"></div>
+    <nav style="display:flex; gap:10px">
+      <a class="btn" href="#" data-route="home">Accueil</a>
+      <a class="btn" href="#" data-route="packs">Packs</a>
+      <a class="btn" href="#" id="loginBtn">Connexion</a>
+      <a class="btn primary" href="#" data-route="cart">Panier</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- HERO -->
+  <section class="hero">
+    <img src="logo.png" alt="Pisto" class="logo-xl"/>
+    <h1>Tous tes abonnements <span class="neon">à 2 €</span></h1>
+    <p>Grâce au cumul d’essais gratuits, profitez d’un accès unique à vos services favoris.</p>
+
+    <div class="marquee-shell" aria-hidden="true"><div class="marquee" id="marquee"></div></div>
+
+    <div class="searchbar">
+      <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="#a9b2c3"><path d="M21.53 20.47l-4.8-4.8A7.5 7.5 0 1016.5 18l4.8 4.8.7-.7zM4 10.5a6.5 6.5 0 1113 0 6.5 6.5 0 01-13 0z"/></svg>
+      <input id="search" placeholder="Rechercher un service (ex : Netflix, Spotify)"/>
+      <span class="kbd">⌘K</span>
+    </div>
+  </section>
+
+  <!-- HOME -->
+  <section id="home" class="page active section">
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <!-- PACKS -->
+  <section id="packs" class="page section">
+    <h2 style="margin:0 0 14px;text-align:center">Packs</h2>
+    <div class="grid" id="packsGrid"></div>
+  </section>
+
+  <!-- PRODUCT -->
+  <section id="product" class="page section">
+    <div class="product">
+      <div class="card" id="prodLeft"></div>
+      <div class="card" id="prodRight"></div>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <h3 style="margin:0 0 10px">Avis clients</h3>
+      <div class="reviews"><div class="reviews-track" id="reviewsTrack"></div></div>
+    </div>
+  </section>
+
+  <!-- CART -->
+  <section id="cart" class="page section">
+    <h2 style="margin:0 0 14px;text-align:center">Panier</h2>
+    <div class="card">
+      <!-- Encoche rouge -->
+      <div class="notice" role="note" aria-label="Information importante">
+        <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="#ff6b6b" aria-hidden="true"><path d="M12 2 1 21h22L12 2zm1 15h-2v2h2v-2zm0-8h-2v6h2V9z"/></svg>
+        <div><strong>Information importante</strong><br/>Pour des raisons de sécurité et de conformité, une seule commande est autorisée <u>par compte et par mois</u>.</div>
+      </div>
+      <!-- Mention jaune -->
+      <div class="notice alt" role="note" aria-label="Délivrance des identifiants">
+        <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="#ffd54f" aria-hidden="true"><path d="M12 2 1 21h22L12 2zm1 14h-2v2h2v-2zm0-8h-2v6h2V8z"/></svg>
+        <div><strong>Envoi des identifiants</strong><br/>Après confirmation du paiement, les identifiants de connexion seront transmis <u>à l’adresse e-mail renseignée</u>.</div>
+      </div>
+
+      <div id="cartList" class="cart-items"></div>
+      <div class="checkout-row">
+        <span class="sum" id="sum">Total : 0 €</span>
+        <span id="authBadge" class="badge" title="Statut de connexion">Non connecté</span>
+        <button id="openAuth" class="btn">Valider mon panier</button>
+        <button id="payBtn" class="btn primary" disabled>Payer</button>
+      </div>
+      <small style="color:var(--muted)">Après connexion, votre panier reste enregistré pour votre prochaine visite.</small>
+    </div>
+  </section>
+
+  <!-- PAYMENT placeholder -->
+  <section id="payment" class="page section">
+    <div class="card"><h2>Paiement</h2><p style="color:var(--muted)">La page de paiement sera branchée ici.</p></div>
+  </section>
+</main>
+
+<!-- AUTH MODAL -->
+<div class="modal" id="authModal" aria-hidden="true">
+  <div class="dialog">
+    <h3 id="authTitle">Créer un compte</h3>
+    <p id="authHint" style="color:var(--muted);margin:0 0 8px">Choisis un identifiant (e-mail recommandé) et un mot de passe.</p>
+    <div class="form-row">
+      <input id="authId" class="input" placeholder="Identifiant (e-mail)"/>
+      <input id="authPw" class="input" type="password" placeholder="Mot de passe"/>
+    </div>
+    <div class="aux">
+      <small id="authMsg" style="color:var(--muted)"></small>
+      <a href="#" id="switchAuth">Déjà un compte ? Se connecter</a>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px">
+      <button class="btn ghost" id="authCancel">Annuler</button>
+      <button class="btn primary" id="authConfirm">Continuer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* === Data === */
+const SERVICES=[{id:'ytprem',name:'YouTube Premium',cat:'cinema',plan:'Premium',was:'12,99€',logo:'logos/youtube-premium.png',desc:'YouTube sans pubs, lecture en arrière-plan et YouTube Music inclus.',available:false},{id:'netflix',name:'Netflix',cat:'cinema',plan:'Premium',was:'19,99€',logo:'logos/netflix.png',desc:'Plateforme de streaming emblématique : films et séries en qualité 4K selon le plan.',available:true},{id:'prime',name:'Prime Video',cat:'cinema',plan:'Standard',was:'13,99€',logo:'logos/prime-video.png',desc:'Amazon Originals, films récents et catalogue varié.',available:true},{id:'disney',name:'Disney+',cat:'cinema',plan:'Premium',was:'11,99€',logo:'logos/disney-plus.png',desc:'Disney, Pixar, Marvel, Star Wars et National Geographic.',available:true},{id:'spotify',name:'Spotify',cat:'musique',plan:'Premium',was:'10,99€',logo:'logos/spotify.png',desc:'Toute votre musique, playlists et podcasts.',available:true},{id:'applem',name:'Apple Music',cat:'musique',plan:'Individuel',was:'10,99€',logo:'logos/apple-music.png',desc:'70+ millions de titres, Dolby Atmos selon appareils.',available:true},{id:'deezer',name:'Deezer',cat:'musique',plan:'Premium',was:'10,99€',logo:'logos/deezer.png',desc:'Flow personnalisé et qualité HiFi selon l’offre.',available:true},{id:'basicfit',name:'Basic-Fit',cat:'sport',plan:'Classic',was:'29,99€',logo:'logos/basic-fit.png',desc:'Abonnement fitness, clubs partout en ville.',available:true},{id:'strava',name:'Strava',cat:'sport',plan:'Premium',was:'9,99€',logo:'logos/strava.png',desc:'Suivi d’entraînements, segments et analyses.',available:false},{id:'fitness',name:'Apple Fitness+',cat:'sport',plan:'Mensuel',was:'9,99€',logo:'logos/apple-fitness-plus.png',desc:'Cours guidés — cardio, yoga, renfo et plus.',available:false},];
+const PACKS=[{id:'pack-cinema',name:'Pack Cinéma',items:['netflix','prime','disney']},{id:'pack-musique',name:'Pack Musique',items:['spotify','applem','deezer']},{id:'pack-sport',name:'Pack Sport',items:['basicfit','strava','fitness']},];
+
+const qs=s=>document.querySelector(s), qsa=s=>[...document.querySelectorAll(s)];
+const fmt=n=>n.toLocaleString('fr-FR',{minimumFractionDigits:0})+' €';
+const priceForItems=ids=>4;
+
+function go(route){ qsa('.page').forEach(p=>p.classList.remove('active')); const el=qs('#'+route); if(el){ el.classList.add('active'); window.scrollTo({top:0,behavior:'smooth'});} }
+qsa('[data-route]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault(); go(e.currentTarget.dataset.route)}));
+
+(function(){ const m=qs('#marquee'); const loop=[...SERVICES,...SERVICES]; loop.forEach(s=>{const d=document.createElement('div'); d.className='pill'; d.innerHTML=`<img src="${s.logo}" alt="${s.name}">`; m.appendChild(d);});})();
+
+function renderGrid(filter=''){ const g=qs('#grid'); g.innerHTML=''; const list=SERVICES.filter(s=>s.name.toLowerCase().includes(filter.toLowerCase())); list.forEach(s=>{ const t=document.createElement('article'); t.className='tile'; t.dataset.id=s.id; t.innerHTML=`<div class="logo"><img src="${s.logo}" alt="${s.name}"></div><h3>${s.name}</h3><p>${s.desc}</p><div class="price"><span class="was">${s.was}</span><span class="now">2 €</span></div><div class="cta-row"><button class="btn ghost" data-view>Voir</button><button class="btn primary ${!s.available?'disabled':''}" data-add>${s.available?'Ajouter au panier':'Indisponible'}</button></div>`; g.appendChild(t); }); g.onclick=(e)=>{ const tile=e.target.closest('.tile'); if(!tile) return; const id=tile.dataset.id; const s=SERVICES.find(x=>x.id===id); if(e.target.matches('[data-add]')&&s.available) addToCart({type:'service',id:s.id,name:s.name,price:2}); if(e.target.matches('[data-view]')) openProduct(id); }; }
+renderGrid(''); const search=qs('#search'); if(search){ search.addEventListener('input',e=>renderGrid(e.target.value)); window.addEventListener('keydown',(ev)=>{ if((ev.metaKey||ev.ctrlKey)&&ev.key.toLowerCase()==='k'){ ev.preventDefault(); search.focus(); } }); }
+
+(function(){ const pg=qs('#packsGrid'); PACKS.forEach(p=>{ const price=priceForItems(p.items); const hasOOS=p.items.some(id=>!SERVICES.find(s=>s.id===id).available); const icons=p.items.slice(0,4).map(id=>`<img src="${SERVICES.find(s=>s.id===id).logo}" style="width:24px;height:24px">`).join(''); const t=document.createElement('article'); t.className='tile'; t.dataset.id=p.id; t.innerHTML=`<span class="ribbon ${hasOOS?'danger':''}">${hasOOS?'RUPTURE DE STOCK':'PACK PROMO'}</span><div class="logo" style="display:flex;gap:6px;padding:10px">${icons}</div><h3>${p.name}</h3><p>Inclut ${p.items.length} abonnements sélectionnés.</p><div class="price"><span class="was">${fmt(Math.min(99,p.items.length*10))}</span><span class="now">${price} €</span></div><div class="cta-row"><button class="btn ghost" data-open>Voir</button><button class="btn primary ${hasOOS?'disabled':''}" data-add>${hasOOS?'Indisponible':'Ajouter au panier'}</button></div>`; pg.appendChild(t); }); pg.onclick=(e)=>{ const tile=e.target.closest('.tile'); if(!tile) return; const pack=PACKS.find(x=>x.id===tile.dataset.id); const hasOOS=pack.items.some(id=>!SERVICES.find(s=>s.id===id).available); if(e.target.matches('[data-add]')&&!hasOOS) addToCart({type:'pack',id:pack.id,name:pack.name,price:priceForItems(pack.items)}); if(e.target.matches('[data-open]')) openPack(pack.id); }; })();
+
+function openProduct(id){ const s=SERVICES.find(x=>x.id===id); qs('#prodLeft').innerHTML=`<div class="prod-head"><div class="logo"><img src="${s.logo}" alt="${s.name}"></div><div><h2 style="margin:0">${s.name}</h2><div style="color:var(--muted)">${s.plan} — ${s.available?'Disponible':'Indisponible'}</div></div></div><p style="color:var(--muted);margin-top:4px">${s.desc}</p><div class="features"><div>• Accès immédiat après validation.</div><div>• Lecture hors connexion selon le service.</div><div>• Annulable à tout moment.</div></div><div style="display:flex;gap:12px;align-items:center"><span class="was">${s.was}</span><span class="now">2 €</span><button class="btn primary ${!s.available?'disabled':''}" onclick="${s.available?`addToCart({type:'service',id:'${s.id}',name:'${s.name}',price:2})`:''}">${s.available?'Ajouter au panier':'Indisponible'}</button></div>`; buildReviews(s.name); qs('#prodRight').innerHTML=`<h3 style="margin:0 0 8px">À propos</h3><p style="color:var(--muted)">Découvrez ${s.name} en toute simplicité. Profitez de contenus exclusifs et d’une expérience fluide.</p>`; go('product'); }
+function openPack(id){ const pack=PACKS.find(p=>p.id===id); const items=pack.items.map(i=>SERVICES.find(s=>s.id===i)); const hasOOS=items.some(i=>!i.available); qs('#prodLeft').innerHTML=`<div class="prod-head"><div class="logo" style="display:flex;gap:6px;padding:10px">${items.slice(0,4).map(i=>`<img src='${i.logo}' style='width:26px;height:26px'>`).join('')}</div><div><h2 style="margin:0">${pack.name}</h2><div style="color:var(--muted)">Inclut ${pack.items.length} services</div></div></div><p style="color:var(--muted)">Contenu : ${items.map(i=>i.name).join(', ')}.</p><div style="display:flex;gap:12px;align-items:center"><span class="was">${fmt(Math.min(99,items.length*10))}</span><span class="now">${priceForItems(pack.items)} €</span><span class="ribbon ${hasOOS?'danger':''}">${hasOOS?'RUPTURE DE STOCK':'PACK PROMO'}</span><button class="btn primary ${hasOOS?'disabled':''}" onclick="${!hasOOS?`addToCart({type:'pack',id:'${pack.id}',name:'${pack.name}',price:${priceForItems(pack.items)}})`:''}">${hasOOS?'Indisponible':'Ajouter au panier'}</button></div>`; buildReviews(pack.name); qs('#prodRight').innerHTML=`<h3 style="margin:0 0 8px">Services inclus</h3>`+items.map(i=>`<div class='line' style='margin:8px 0'><div style='display:flex;align-items:center;gap:10px'><img src="${i.logo}" style="width:22px;height:22px"><b>${i.name}</b></div><span>${i.available?'2 €':'Indispo'}</span></div>`).join(''); go('product'); }
+function buildReviews(ctx){ const t=qs('#reviewsTrack'); const base=[{n:'Alexandre',t:'Activation rapide, rien à dire.',s:5},{n:'Lina',t:'Prix imbattable pour tester.',s:5},{n:'Yanis',t:'Interface claire et efficace.',s:4},{n:'Chloé',t:'Support réactif, top.',s:5},{n:'Mehdi',t:'Très simple à utiliser.',s:5},{n:'Zoé',t:'Ravie du service.',s:4},]; const list=[...base,...base]; t.innerHTML=list.map(r=>`<div class='review'><div class='stars'>${'★'.repeat(r.s)}${'☆'.repeat(5-r.s)}</div><b>${r.n}</b><div style='color:var(--muted);margin-top:6px'>${r.t}</div></div>`).join(''); }
+
+/* Cart */
+let CART=JSON.parse(localStorage.getItem('pisto_cart')||'[]');
+function saveCart(){ localStorage.setItem('pisto_cart',JSON.stringify(CART)); }
+function renderCart(){ const list=qs('#cartList'); list.innerHTML=''; CART.forEach((it,idx)=>{ const line=document.createElement('div'); line.className='line'; line.innerHTML=`<div style="display:flex;align-items:center;gap:10px"><div class="logo" style="width:34px;height:34px;background:var(--panel)">${it.type==='pack'?'📦':'🎫'}</div><div><b>${it.name}</b><div style="color:var(--muted);font-size:13px">${it.type==='pack'?'Pack':'Abonnement'} — ${fmt(it.price)}</div></div></div><div class="x" data-i="${idx}">✕</div>`; list.appendChild(line);}); const total=CART.reduce((a,b)=>a+b.price,0); qs('#sum').textContent='Total : '+fmt(total); saveCart(); syncAuthUI(); }
+function addToCart(item){ CART.push(item); renderCart(); go('cart'); }
+qs('#cartList').addEventListener('click',e=>{ if(e.target.classList.contains('x')){ CART.splice(Number(e.target.dataset.i),1); renderCart(); }});
+
+/* Auth */
+const authModal=qs('#authModal'),authId=qs('#authId'),authPw=qs('#authPw'),authTitle=qs('#authTitle'),authHint=qs('#authHint'),authMsg=qs('#authMsg'),authCancel=qs('#authCancel'),authConfirm=qs('#authConfirm'),switchAuth=qs('#switchAuth'); const authBadge=qs('#authBadge'),payBtn=qs('#payBtn'),loginBtn=qs('#loginBtn');
+const sessionKey='pisto_session';
+function openAuth(mode='signup'){ authModal.classList.add('open'); authId.value=''; authPw.value=''; authMsg.textContent=''; setMode(mode); }
+function closeAuth(){ authModal.classList.remove('open'); }
+function setMode(mode){ authModal.dataset.mode=mode; if(mode==='signup'){authTitle.textContent='Créer un compte';authHint.textContent='Choisis un identifiant (e-mail recommandé) et un mot de passe.';switchAuth.textContent='Déjà un compte ? Se connecter';} else {authTitle.textContent='Connexion';authHint.textContent='Entre ton identifiant et ton mot de passe.';switchAuth.textContent='Créer un compte';} }
+function accountExists(id){ return localStorage.getItem('pisto_account:'+id)!==null; }
+function createAccount(id,pw){ localStorage.setItem('pisto_account:'+id,pw); }
+function checkLogin(id,pw){ return localStorage.getItem('pisto_account:'+id)===pw; }
+function setSession(id){ localStorage.setItem(sessionKey,id); syncAuthUI(); }
+function getSession(){ return localStorage.getItem(sessionKey); }
+function syncAuthUI(){ const id=getSession(); const connected=!!id; authBadge.className='badge'+(connected?' success':''); authBadge.textContent=connected?'Compte connecté ✓':'Non connecté'; payBtn.disabled=!connected||CART.length===0; }
+
+qs('#openAuth').addEventListener('click',()=>{ getSession()?go('payment'):openAuth('signup'); });
+if(loginBtn){ loginBtn.addEventListener('click',e=>{e.preventDefault(); openAuth('login');}); }
+authCancel.addEventListener('click',closeAuth);
+switchAuth.addEventListener('click',e=>{ e.preventDefault(); setMode(authModal.dataset.mode==='signup'?'login':'signup'); });
+
+authConfirm.addEventListener('click',()=>{ const id=(authId.value||'').trim(), pw=authPw.value; if(!id||pw.length<4){authMsg.textContent='Renseigne un identifiant et un mot de passe (min. 4 caractères).';return;} if(authModal.dataset.mode==='signup'){ if(accountExists(id)){authMsg.textContent='Un compte existe déjà. Passe en mode connexion.'; setMode('login');} else {createAccount(id,pw); sessionStorage.setItem('pisto_recent_signup','1'); authMsg.textContent='Compte créé. Connecte-toi maintenant.'; setMode('login'); authPw.value='';}} else {authConfirm.disabled=true; const prev=authConfirm.innerHTML; authConfirm.innerHTML='<span class="spinner"></span>Connexion...'; setTimeout(()=>{ const recent=sessionStorage.getItem('pisto_recent_signup')==='1'; if(checkLogin(id,pw)&&recent){ setSession(id); sessionStorage.removeItem('pisto_recent_signup'); closeAuth(); } else { authMsg.textContent='Utilisateur introuvable'; } authConfirm.disabled=false; authConfirm.innerHTML=prev; },2000);} });
+payBtn.addEventListener('click',()=>go('payment'));
+
+renderCart();
+</script>
+</body>
+</html>
