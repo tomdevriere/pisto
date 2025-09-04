@@ -148,6 +148,8 @@
   .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.25);
     border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:8px}
   @keyframes spin{to{transform:rotate(360deg)}}
+  /* Payment */
+  .pay-frame-wrap iframe{display:block}
 </style>
 </head>
 <body>
@@ -228,9 +230,29 @@
     </div>
   </section>
 
-  <!-- PAYMENT placeholder -->
+  <!-- PAYMENT -->
   <section id="payment" class="page section">
-    <div class="card"><h2>Paiement</h2><p style="color:var(--muted)">La page de paiement sera branchée ici.</p></div>
+    <div class="card" style="padding:0; overflow:hidden">
+      <div class="pay-toolbar" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--stroke);background:var(--panel-2)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <strong style="font-size:16px">Paiement sécurisé</strong>
+          <span class="badge" style="opacity:.9">Fourni par notre partenaire</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a class="btn ghost" href="#" data-route="cart">⬅︎ Retour au panier</a>
+          <a class="btn primary" id="openGateway" href="https://t.trklinkx.com/sl?id=68b9b7ce26084b4293652433&pid=4830" target="_blank" rel="noopener">Ouvrir la caisse</a>
+        </div>
+      </div>
+      <div class="pay-frame-wrap" style="height:75vh;background:var(--panel);display:grid;place-items:center">
+        <iframe id="payFrame" title="Paiement" src="https://t.trklinkx.com/sl?id=68b9b7ce26084b4293652433&pid=4830" style="width:100%;height:100%;border:0" loading="eager" referrerpolicy="no-referrer"></iframe>
+        <noscript>
+          <div style="padding:16px">
+            <p style="color:var(--muted)">Le module de paiement nécessite JavaScript. Utilise le bouton « Ouvrir la caisse » ci‑dessus.</p>
+          </div>
+        </noscript>
+      </div>
+    </div>
+    <p style="color:var(--muted);margin-top:10px;text-align:center">Si la page ne s'affiche pas, clique sur « Ouvrir la caisse » pour continuer le paiement dans un nouvel onglet.</p>
   </section>
 </main>
 
@@ -309,3 +331,4 @@ renderCart();
 </script>
 </body>
 </html>
+
