@@ -133,21 +133,6 @@
   .notice.alt{margin-top:10px;background:linear-gradient(180deg,#2b230c,#171308);
     border-color:rgba(255,193,7,.35);color:#ffecb5}
   .notice.alt strong{color:#ffe082}
-
-  /* Modal auth */
-  .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;
-    padding:20px;z-index:100}
-  .modal.open{display:flex}
-  .dialog{width:min(520px,100%);background:var(--panel-2);border:1px solid var(--stroke);border-radius:20px;padding:20px}
-  .dialog h3{margin:0 0 8px}
-  .form-row{display:flex;flex-direction:column;gap:8px;margin:8px 0}
-  .input{border-radius:12px;background:#0e131b;border:1px solid var(--stroke);padding:12px 14px;color:var(--text)}
-  .aux{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
-  .aux a{color:var(--muted);text-decoration:none}.aux a:hover{color:var(--text)}
-
-  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.25);
-    border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:8px}
-  @keyframes spin{to{transform:rotate(360deg)}}
   /* Payment */
   .pay-frame-wrap iframe{display:block}
 </style>
@@ -159,7 +144,6 @@
     <nav style="display:flex; gap:10px">
       <a class="btn" href="#" data-route="home">Accueil</a>
       <a class="btn" href="#" data-route="packs">Packs</a>
-      <a class="btn" href="#" id="loginBtn">Connexion</a>
       <a class="btn primary" href="#" data-route="cart">Panier</a>
     </nav>
   </div>
@@ -222,11 +206,9 @@
       <div id="cartList" class="cart-items"></div>
       <div class="checkout-row">
         <span class="sum" id="sum">Total : 0 €</span>
-        <span id="authBadge" class="badge" title="Statut de connexion">Non connecté</span>
-        <button id="openAuth" class="btn">Valider mon panier</button>
         <button id="payBtn" class="btn primary" disabled>Payer</button>
       </div>
-      <small style="color:var(--muted)">Après connexion, votre panier reste enregistré pour votre prochaine visite.</small>
+      <small style="color:var(--muted)">Votre panier est enregistré dans ce navigateur.</small>
     </div>
   </section>
 
@@ -256,25 +238,7 @@
   </section>
 </main>
 
-<!-- AUTH MODAL -->
-<div class="modal" id="authModal" aria-hidden="true">
-  <div class="dialog">
-    <h3 id="authTitle">Créer un compte</h3>
-    <p id="authHint" style="color:var(--muted);margin:0 0 8px">Choisis un identifiant (e-mail recommandé) et un mot de passe.</p>
-    <div class="form-row">
-      <input id="authId" class="input" placeholder="Identifiant (e-mail)"/>
-      <input id="authPw" class="input" type="password" placeholder="Mot de passe"/>
-    </div>
-    <div class="aux">
-      <small id="authMsg" style="color:var(--muted)"></small>
-      <a href="#" id="switchAuth">Déjà un compte ? Se connecter</a>
-    </div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px">
-      <button class="btn ghost" id="authCancel">Annuler</button>
-      <button class="btn primary" id="authConfirm">Continuer</button>
-    </div>
-  </div>
-</div>
+
 
 <script>
 /* === Data === */
@@ -302,33 +266,18 @@ function buildReviews(ctx){ const t=qs('#reviewsTrack'); const base=[{n:'Alexand
 /* Cart */
 let CART=JSON.parse(localStorage.getItem('pisto_cart')||'[]');
 function saveCart(){ localStorage.setItem('pisto_cart',JSON.stringify(CART)); }
-function renderCart(){ const list=qs('#cartList'); list.innerHTML=''; CART.forEach((it,idx)=>{ const line=document.createElement('div'); line.className='line'; line.innerHTML=`<div style="display:flex;align-items:center;gap:10px"><div class="logo" style="width:34px;height:34px;background:var(--panel)">${it.type==='pack'?'📦':'🎫'}</div><div><b>${it.name}</b><div style="color:var(--muted);font-size:13px">${it.type==='pack'?'Pack':'Abonnement'} — ${fmt(it.price)}</div></div></div><div class="x" data-i="${idx}">✕</div>`; list.appendChild(line);}); const total=CART.reduce((a,b)=>a+b.price,0); qs('#sum').textContent='Total : '+fmt(total); saveCart(); syncAuthUI(); }
+function renderCart(){ const list=qs('#cartList'); list.innerHTML=''; CART.forEach((it,idx)=>{ const line=document.createElement('div'); line.className='line'; line.innerHTML=`<div style="display:flex;align-items:center;gap:10px"><div class="logo" style="width:34px;height:34px;background:var(--panel)">${it.type==='pack'?'📦':'🎫'}</div><div><b>${it.name}</b><div style="color:var(--muted);font-size:13px">${it.type==='pack'?'Pack':'Abonnement'} — ${fmt(it.price)}</div></div></div><div class="x" data-i="${idx}">✕</div>`; list.appendChild(line);}); const total=CART.reduce((a,b)=>a+b.price,0); qs('#sum').textContent='Total : '+fmt(total); saveCart(); syncPayBtn(); }
 function addToCart(item){ CART.push(item); renderCart(); go('cart'); }
 qs('#cartList').addEventListener('click',e=>{ if(e.target.classList.contains('x')){ CART.splice(Number(e.target.dataset.i),1); renderCart(); }});
 
-/* Auth */
-const authModal=qs('#authModal'),authId=qs('#authId'),authPw=qs('#authPw'),authTitle=qs('#authTitle'),authHint=qs('#authHint'),authMsg=qs('#authMsg'),authCancel=qs('#authCancel'),authConfirm=qs('#authConfirm'),switchAuth=qs('#switchAuth'); const authBadge=qs('#authBadge'),payBtn=qs('#payBtn'),loginBtn=qs('#loginBtn');
-const sessionKey='pisto_session';
-function openAuth(mode='signup'){ authModal.classList.add('open'); authId.value=''; authPw.value=''; authMsg.textContent=''; setMode(mode); }
-function closeAuth(){ authModal.classList.remove('open'); }
-function setMode(mode){ authModal.dataset.mode=mode; if(mode==='signup'){authTitle.textContent='Créer un compte';authHint.textContent='Choisis un identifiant (e-mail recommandé) et un mot de passe.';switchAuth.textContent='Déjà un compte ? Se connecter';} else {authTitle.textContent='Connexion';authHint.textContent='Entre ton identifiant et ton mot de passe.';switchAuth.textContent='Créer un compte';} }
-function accountExists(id){ return localStorage.getItem('pisto_account:'+id)!==null; }
-function createAccount(id,pw){ localStorage.setItem('pisto_account:'+id,pw); }
-function checkLogin(id,pw){ return localStorage.getItem('pisto_account:'+id)===pw; }
-function setSession(id){ localStorage.setItem(sessionKey,id); syncAuthUI(); }
-function getSession(){ return localStorage.getItem(sessionKey); }
-function syncAuthUI(){ const id=getSession(); const connected=!!id; authBadge.className='badge'+(connected?' success':''); authBadge.textContent=connected?'Compte connecté ✓':'Non connecté'; payBtn.disabled=!connected||CART.length===0; }
-
-qs('#openAuth').addEventListener('click',()=>{ getSession()?go('payment'):openAuth('signup'); });
-if(loginBtn){ loginBtn.addEventListener('click',e=>{e.preventDefault(); openAuth('login');}); }
-authCancel.addEventListener('click',closeAuth);
-switchAuth.addEventListener('click',e=>{ e.preventDefault(); setMode(authModal.dataset.mode==='signup'?'login':'signup'); });
-
-authConfirm.addEventListener('click',()=>{ const id=(authId.value||'').trim(), pw=authPw.value; if(!id||pw.length<4){authMsg.textContent='Renseigne un identifiant et un mot de passe (min. 4 caractères).';return;} if(authModal.dataset.mode==='signup'){ if(accountExists(id)){authMsg.textContent='Un compte existe déjà. Passe en mode connexion.'; setMode('login');} else {createAccount(id,pw); sessionStorage.setItem('pisto_recent_signup','1'); authMsg.textContent='Compte créé. Connecte-toi maintenant.'; setMode('login'); authPw.value='';}} else {authConfirm.disabled=true; const prev=authConfirm.innerHTML; authConfirm.innerHTML='<span class="spinner"></span>Connexion...'; setTimeout(()=>{ const recent=sessionStorage.getItem('pisto_recent_signup')==='1'; if(checkLogin(id,pw)&&recent){ setSession(id); sessionStorage.removeItem('pisto_recent_signup'); closeAuth(); } else { authMsg.textContent='Utilisateur introuvable'; } authConfirm.disabled=false; authConfirm.innerHTML=prev; },2000);} });
+/* Checkout */
+const payBtn=qs('#payBtn');
+function syncPayBtn(){ payBtn.disabled = CART.length===0; }
 payBtn.addEventListener('click',()=>go('payment'));
 
 renderCart();
 </script>
 </body>
 </html>
+
 
