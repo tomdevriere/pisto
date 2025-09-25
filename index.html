@@ -32,6 +32,8 @@
   .btn.primary:hover{filter:saturate(105%);box-shadow:0 16px 44px rgba(255,122,26,.42)}
   .btn.disabled,.btn:disabled{opacity:.5;cursor:not-allowed;pointer-events:none;background:rgba(255,255,255,.06);
     color:var(--muted);border:1px solid var(--stroke);box-shadow:none}
+  .btn.icon{padding:8px 10px;border-radius:12px;width:38px;height:38px;display:inline-grid;place-items:center;font-size:18px}
+  .btn.icon span{line-height:1;transform:translateY(-1px)}
 
   /* Hero */
   .hero{padding:28px 0 22px;text-align:center}
@@ -75,17 +77,37 @@
   @media(max-width:360px){.grid{grid-template-columns:1fr}}
 
   .tile{position:relative;border-radius:var(--radius);background:var(--panel-2);border:1px solid var(--stroke);
-    padding:22px;text-align:center}
+    padding:22px;text-align:center;display:flex;flex-direction:column;align-items:center}
   .tile .logo{width:90px;height:90px;margin:0 auto 10px;border-radius:20px;background:var(--panel);
     display:flex;align-items:center;justify-content:center}
   .tile .logo img{width:100%;height:100%;object-fit:contain}
   .tile h3{margin:6px 0 6px;font-size:20px}
-  .tile p{color:var(--muted);font-size:14px}
-  .price{display:flex;justify-content:center;gap:10px;margin-top:10px}
-  .was{text-decoration:line-through;color:var(--muted)}
-  .now{font-weight:800;background:linear-gradient(180deg,var(--orange),var(--orange-2));color:#0b0c0f;
-    padding:6px 12px;border-radius:999px}
-  .cta-row{display:flex;justify-content:center;gap:8px;margin-top:10px}
+  .tile p{color:var(--muted);font-size:14px;min-height:38px}
+
+  /* Prix aligné proprement */
+  .price{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    margin-top:10px;
+    margin-bottom:28px;
+    align-items: baseline;   /* aligne « 2 € » sur la ligne du prix barré */
+  }
+  .was{ text-decoration:line-through; color:var(--muted); line-height:1 }
+  .now{
+    font-weight:800;
+    background:linear-gradient(180deg,var(--orange),var(--orange-2));
+    color:#0b0c0f;
+    padding:4px 12px;        /* badge plus fin */
+    border-radius:999px;
+    line-height:1;
+    display:inline-flex;
+    align-items:center;
+    position:relative;
+    top:-6px;                /* remonte légèrement pour parfaite baseline */
+  }
+
+  .cta-row{display:flex;justify-content:center;gap:8px;margin-top:auto}
 
   /* Ribbons */
   .ribbon{position:absolute;top:14px;left:-10px;background:linear-gradient(180deg,var(--orange),var(--orange-2));
@@ -105,7 +127,7 @@
   .prod-head img{width:100%;height:100%;object-fit:contain}
   .features{display:grid;gap:10px;margin:14px 0}
 
-  /* Avis */
+  /* Avis (défilement horizontal) */
   .reviews{overflow:hidden}
   .reviews-track{display:flex;gap:16px;animation:rev 32s linear infinite}
   .review{flex:0 0 320px;background:var(--panel);border:1px solid var(--stroke);border-radius:18px;padding:14px}
@@ -133,8 +155,16 @@
   .notice.alt{margin-top:10px;background:linear-gradient(180deg,#2b230c,#171308);
     border-color:rgba(255,193,7,.35);color:#ffecb5}
   .notice.alt strong{color:#ffe082}
+
   /* Payment */
   .pay-frame-wrap iframe{display:block}
+
+  /* Mobile tweaks */
+  @media (max-width:640px){
+    .tile{min-height:300px;padding-bottom:18px}
+    .tile .logo{width:86px;height:86px}
+    .tile .ribbon{top:10px;left:10px}
+  }
 </style>
 </head>
 <body>
@@ -192,12 +222,10 @@
   <section id="cart" class="page section">
     <h2 style="margin:0 0 14px;text-align:center">Panier</h2>
     <div class="card">
-      <!-- Encoche rouge -->
       <div class="notice" role="note" aria-label="Information importante">
         <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="#ff6b6b" aria-hidden="true"><path d="M12 2 1 21h22L12 2zm1 15h-2v2h2v-2zm0-8h-2v6h2V9z"/></svg>
         <div><strong>Information importante</strong><br/>Pour des raisons de sécurité et de conformité, une seule commande est autorisée <u>par compte et par mois</u>.</div>
       </div>
-      <!-- Mention jaune -->
       <div class="notice alt" role="note" aria-label="Délivrance des identifiants">
         <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="#ffd54f" aria-hidden="true"><path d="M12 2 1 21h22L12 2zm1 14h-2v2h2v-2zm0-8h-2v6h2V8z"/></svg>
         <div><strong>Envoi des identifiants</strong><br/>Après confirmation du paiement, les identifiants de connexion seront transmis <u>à l’adresse e-mail renseignée</u>.</div>
@@ -212,7 +240,7 @@
     </div>
   </section>
 
-  <!-- PAYMENT (optionnel si tu gardes l’iframe) -->
+  <!-- PAYMENT -->
   <section id="payment" class="page section">
     <div class="card" style="padding:0; overflow:hidden">
       <div class="pay-toolbar" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--stroke);background:var(--panel-2)">
@@ -240,46 +268,160 @@
 
 <script>
 /* === Data === */
-const SERVICES=[{id:'ytprem',name:'YouTube Premium',cat:'cinema',plan:'Premium',was:'12,99€',logo:'logos/youtube-premium.png',desc:'YouTube sans pubs, lecture en arrière-plan et YouTube Music inclus.',available:false},{id:'netflix',name:'Netflix',cat:'cinema',plan:'Premium',was:'19,99€',logo:'logos/netflix.png',desc:'Plateforme de streaming emblématique : films et séries en qualité 4K selon le plan.',available:true},{id:'prime',name:'Prime Video',cat:'cinema',plan:'Standard',was:'13,99€',logo:'logos/prime-video.png',desc:'Amazon Originals, films récents et catalogue varié.',available:true},{id:'disney',name:'Disney+',cat:'cinema',plan:'Premium',was:'11,99€',logo:'logos/disney-plus.png',desc:'Disney, Pixar, Marvel, Star Wars et National Geographic.',available:true},{id:'spotify',name:'Spotify',cat:'musique',plan:'Premium',was:'10,99€',logo:'logos/spotify.png',desc:'Toute votre musique, playlists et podcasts.',available:true},{id:'applem',name:'Apple Music',cat:'musique',plan:'Individuel',was:'10,99€',logo:'logos/apple-music.png',desc:'70+ millions de titres, Dolby Atmos selon appareils.',available:true},{id:'deezer',name:'Deezer',cat:'musique',plan:'Premium',was:'10,99€',logo:'logos/deezer.png',desc:'Flow personnalisé et qualité HiFi selon l’offre.',available:true},{id:'basicfit',name:'Basic-Fit',cat:'sport',plan:'Classic',was:'29,99€',logo:'logos/basic-fit.png',desc:'Abonnement fitness, clubs partout en ville.',available:true},{id:'strava',name:'Strava',cat:'sport',plan:'Premium',was:'9,99€',logo:'logos/strava.png',desc:'Suivi d’entraînements, segments et analyses.',available:false},{id:'fitness',name:'Apple Fitness+',cat:'sport',plan:'Mensuel',was:'9,99€',logo:'logos/apple-fitness-plus.png',desc:'Cours guidés — cardio, yoga, renfo et plus.',available:false},];
-const PACKS=[{id:'pack-cinema',name:'Pack Cinéma',items:['netflix','prime','disney']},{id:'pack-musique',name:'Pack Musique',items:['spotify','applem','deezer']},{id:'pack-sport',name:'Pack Sport',items:['basicfit','strava','fitness']},];
+const SERVICES=[
+  {id:'snapplus',name:'Snap+',cat:'autre',plan:'À vie',was:'96€',logo:'snapplus.png',desc:'2 € à vie<br>Accès garanti sans limite',available:true,badge:'tendance'},
+  {id:'netflix',name:'Netflix',cat:'cinema',plan:'Premium',was:'19,99€',logo:'logos/netflix.png',desc:'Films et séries en qualité 4K selon le plan.',available:true},
+  {id:'prime',name:'Prime Video',cat:'cinema',plan:'Standard',was:'13,99€',logo:'logos/prime-video.png',desc:'Amazon Originals, films récents et catalogue varié.',available:true},
+  {id:'basicfit',name:'Basic-Fit',cat:'sport',plan:'Classic',was:'29,99€',logo:'logos/basic-fit.png',desc:'Abonnement fitness, clubs partout en ville.',available:true},
+  {id:'disney',name:'Disney+',cat:'cinema',plan:'Premium',was:'11,99€',logo:'logos/disney-plus.png',desc:'Disney, Pixar, Marvel, Star Wars et National Geographic.',available:true},
+  {id:'spotify',name:'Spotify',cat:'musique',plan:'Premium',was:'10,99€',logo:'logos/spotify.png',desc:'Toute votre musique, playlists et podcasts.',available:true},
+  {id:'applem',name:'Apple Music',cat:'musique',plan:'Individuel',was:'10,99€',logo:'logos/apple-music.png',desc:'70+ millions de titres, Dolby Atmos selon appareils.',available:true},
+  {id:'deezer',name:'Deezer',cat:'musique',plan:'Premium',was:'10,99€',logo:'logos/deezer.png',desc:'Flow personnalisé et qualité HiFi selon l’offre.',available:true},
+  {id:'ytprem',name:'YouTube Premium',cat:'cinema',plan:'Premium',was:'12,99€',logo:'logos/youtube-premium.png',desc:'YouTube sans pubs, lecture en arrière-plan et YouTube Music inclus.',available:false},
+  {id:'strava',name:'Strava',cat:'sport',plan:'Premium',was:'9,99€',logo:'logos/strava.png',desc:'Suivi d’entraînements, segments et analyses.',available:false},
+  {id:'fitness',name:'Apple Fitness+',cat:'sport',plan:'Mensuel',was:'9,99€',logo:'logos/apple-fitness-plus.png',desc:'Cours guidés — cardio, yoga, renfo et plus.',available:false},
+];
+
+const PACKS=[
+  {id:'pack-cinema',name:'Pack Cinéma',items:['netflix','prime','disney']},
+  {id:'pack-musique',name:'Pack Musique',items:['spotify','applem','deezer']},
+  {id:'pack-sport',name:'Pack Sport',items:['basicfit','strava','fitness']},
+];
 
 const qs=s=>document.querySelector(s), qsa=s=>[...document.querySelectorAll(s)];
 const fmt=n=>n.toLocaleString('fr-FR',{minimumFractionDigits:0})+' €';
 const priceForItems=ids=>4;
 
-/* Lien de paiement unique */
-const PAY_URL='https://t.trklinkx.com/sl?id=68b9b7ce26084b4293652433&pid=4830';
-
+/* Router */
 function go(route){ qsa('.page').forEach(p=>p.classList.remove('active')); const el=qs('#'+route); if(el){ el.classList.add('active'); window.scrollTo({top:0,behavior:'smooth'});} }
 qsa('[data-route]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault(); go(e.currentTarget.dataset.route)}));
 
+/* Marquee */
 (function(){ const m=qs('#marquee'); const loop=[...SERVICES,...SERVICES]; loop.forEach(s=>{const d=document.createElement('div'); d.className='pill'; d.innerHTML=`<img src="${s.logo}" alt="${s.name}">`; m.appendChild(d);});})();
 
-function renderGrid(filter=''){ const g=qs('#grid'); g.innerHTML=''; const list=SERVICES.filter(s=>s.name.toLowerCase().includes(filter.toLowerCase())); list.forEach(s=>{ const t=document.createElement('article'); t.className='tile'; t.dataset.id=s.id; t.innerHTML=`<div class="logo"><img src="${s.logo}" alt="${s.name}"></div><h3>${s.name}</h3><p>${s.desc}</p><div class="price"><span class="was">${s.was}</span><span class="now">2 €</span></div><div class="cta-row"><button class="btn ghost" data-view>Voir</button><button class="btn primary ${!s.available?'disabled':''}" data-add>${s.available?'Ajouter au panier':'Indisponible'}</button></div>`; g.appendChild(t); }); g.onclick=(e)=>{ const tile=e.target.closest('.tile'); if(!tile) return; const id=tile.dataset.id; const s=SERVICES.find(x=>x.id===id); if(e.target.matches('[data-add]')&&s.available) addToCart({type:'service',id:s.id,name:s.name,price:2}); if(e.target.matches('[data-view]')) openProduct(id); }; }
-renderGrid(''); const search=qs('#search'); if(search){ search.addEventListener('input',e=>renderGrid(e.target.value)); window.addEventListener('keydown',(ev)=>{ if((ev.metaKey||ev.ctrlKey)&&ev.key.toLowerCase()==='k'){ ev.preventDefault(); search.focus(); } }); }
+/* Grille services */
+function renderGrid(filter=''){
+  const g=qs('#grid'); g.innerHTML='';
+  const list=SERVICES.filter(s=>s.name.toLowerCase().includes(filter.toLowerCase()));
+  list.forEach(s=>{
+    const t=document.createElement('article');
+    t.className='tile'; t.dataset.id=s.id;
+    t.innerHTML=`
+      ${s.badge==='tendance' ? `<span class="ribbon danger">TENDANCE</span>` : ``}
+      <div class="logo"><img src="${s.logo}" alt="${s.name}"></div>
+      <h3>${s.name}</h3>
+      <p>${s.desc||''}</p>
+      <div class="price"><span class="was">${s.was||''}</span><span class="now">2 €</span></div>
+      <div class="cta-row">
+        <button class="btn ghost" data-view>Voir</button>
+        <button class="btn icon ${!s.available?'disabled':''}" data-add aria-label="Ajouter"><span aria-hidden="true">+</span></button>
+      </div>`;
+    g.appendChild(t);
+  });
+  g.onclick=(e)=>{
+    const tile=e.target.closest('.tile'); if(!tile) return;
+    const id=tile.dataset.id; const s=SERVICES.find(x=>x.id===id);
+    if(e.target.closest('[data-add]')&&s.available) addToCart({type:'service',id:s.id,name:s.name,price:2});
+    if(e.target.closest('[data-view]')) openProduct(id);
+  };
+}
+renderGrid('');
+const search=qs('#search'); if(search){ search.addEventListener('input',e=>renderGrid(e.target.value)); window.addEventListener('keydown',(ev)=>{ if((ev.metaKey||ev.ctrlKey)&&ev.key.toLowerCase()==='k'){ ev.preventDefault(); search.focus(); } }); }
 
-(function(){ const pg=qs('#packsGrid'); PACKS.forEach(p=>{ const price=priceForItems(p.items); const hasOOS=p.items.some(id=>!SERVICES.find(s=>s.id===id).available); const icons=p.items.slice(0,4).map(id=>`<img src="${SERVICES.find(s=>s.id===id).logo}" style="width:24px;height:24px">`).join(''); const t=document.createElement('article'); t.className='tile'; t.dataset.id=p.id; t.innerHTML=`<span class="ribbon ${hasOOS?'danger':''}">${hasOOS?'RUPTURE DE STOCK':'PACK PROMO'}</span><div class="logo" style="display:flex;gap:6px;padding:10px">${icons}</div><h3>${p.name}</h3><p>Inclut ${p.items.length} abonnements sélectionnés.</p><div class="price"><span class="was">${fmt(Math.min(99,p.items.length*10))}</span><span class="now">${price} €</span></div><div class="cta-row"><button class="btn ghost" data-open>Voir</button><button class="btn primary ${hasOOS?'disabled':''}" data-add>${hasOOS?'Indisponible':'Ajouter au panier'}</button></div>`; pg.appendChild(t); }); pg.onclick=(e)=>{ const tile=e.target.closest('.tile'); if(!tile) return; const pack=PACKS.find(x=>x.id===tile.dataset.id); const hasOOS=pack.items.some(id=>!SERVICES.find(s=>s.id===id).available); if(e.target.matches('[data-add]')&&!hasOOS) addToCart({type:'pack',id:pack.id,name:pack.name,price:priceForItems(pack.items)}); if(e.target.matches('[data-open]')) openPack(pack.id); }; })();
+/* Packs */
+(function(){
+  const pg=qs('#packsGrid');
+  PACKS.forEach(p=>{
+    const price=priceForItems(p.items);
+    const hasOOS=p.items.some(id=>!SERVICES.find(s=>s.id===id).available);
+    const icons=p.items.slice(0,4).map(id=>`<img src="${SERVICES.find(s=>s.id===id).logo}" style="width:24px;height:24px">`).join('');
+    const t=document.createElement('article');
+    t.className='tile'; t.dataset.id=p.id;
+    t.innerHTML=`
+      <span class="ribbon ${hasOOS?'danger':''}">${hasOOS?'RUPTURE DE STOCK':'PACK PROMO'}</span>
+      <div class="logo" style="display:flex;gap:6px;padding:10px">${icons}</div>
+      <h3>${p.name}</h3>
+      <p>Inclut ${p.items.length} abonnements sélectionnés.</p>
+      <div class="price"><span class="was">${fmt(Math.min(99,p.items.length*10))}</span><span class="now">${price} €</span></div>
+      <div class="cta-row">
+        <button class="btn ghost" data-open>Voir</button>
+        <button class="btn icon ${hasOOS?'disabled':''}" data-add aria-label="Ajouter"><span aria-hidden="true">+</span></button>
+      </div>`;
+    pg.appendChild(t);
+  });
+  pg.onclick=(e)=>{
+    const tile=e.target.closest('.tile'); if(!tile) return;
+    const pack=PACKS.find(x=>x.id===tile.dataset.id);
+    const hasOOS=pack.items.some(id=>!SERVICES.find(s=>s.id===id).available);
+    if(e.target.closest('[data-add]')&&!hasOOS) addToCart({type:'pack',id:pack.id,name:pack.name,price:priceForItems(pack.items)});
+    if(e.target.closest('[data-open]')) openPack(pack.id);
+  };
+})();
 
-function openProduct(id){ const s=SERVICES.find(x=>x.id===id); qs('#prodLeft').innerHTML=`<div class="prod-head"><div class="logo"><img src="${s.logo}" alt="${s.name}"></div><div><h2 style="margin:0">${s.name}</h2><div style="color:var(--muted)">${s.plan} — ${s.available?'Disponible':'Indisponible'}</div></div></div><p style="color:var(--muted);margin-top:4px">${s.desc}</p><div class="features"><div>• Accès immédiat après validation.</div><div>• Lecture hors connexion selon le service.</div><div>• Annulable à tout moment.</div></div><div style="display:flex;gap:12px;align-items:center"><span class="was">${s.was}</span><span class="now">2 €</span><button class="btn primary ${!s.available?'disabled':''}" onclick="${s.available?`addToCart({type:'service',id:'${s.id}',name:'${s.name}',price:2})`:''}">${s.available?'Ajouter au panier':'Indisponible'}</button></div>`; buildReviews(s.name); qs('#prodRight').innerHTML=`<h3 style="margin:0 0 8px">À propos</h3><p style="color:var(--muted)">Découvrez ${s.name} en toute simplicité. Profitez de contenus exclusifs et d’une expérience fluide.</p>`; go('product'); }
-function openPack(id){ const pack=PACKS.find(p=>p.id===id); const items=pack.items.map(i=>SERVICES.find(s=>s.id===i)); const hasOOS=items.some(i=>!i.available); qs('#prodLeft').innerHTML=`<div class="prod-head"><div class="logo" style="display:flex;gap:6px;padding:10px">${items.slice(0,4).map(i=>`<img src='${i.logo}' style='width:26px;height:26px'>`).join('')}</div><div><h2 style="margin:0">${pack.name}</h2><div style="color:var(--muted)">Inclut ${pack.items.length} services</div></div></div><p style="color:var(--muted)">Contenu : ${items.map(i=>i.name).join(', ')}.</p><div style="display:flex;gap:12px;align-items:center"><span class="was">${fmt(Math.min(99,items.length*10))}</span><span class="now">${priceForItems(pack.items)} €</span><span class="ribbon ${hasOOS?'danger':''}">${hasOOS?'RUPTURE DE STOCK':'PACK PROMO'}</span><button class="btn primary ${hasOOS?'disabled':''}" onclick="${!hasOOS?`addToCart({type:'pack',id:'${pack.id}',name:'${pack.name}',price:${priceForItems(pack.items)}})`:''}">${hasOOS?'Indisponible':'Ajouter au panier'}</button></div>`; buildReviews(pack.name); qs('#prodRight').innerHTML=`<h3 style="margin:0 0 8px">Services inclus</h3>`+items.map(i=>`<div class='line' style='margin:8px 0'><div style='display:flex;align-items:center;gap:10px'><img src="${i.logo}" style="width:22px;height:22px"><b>${i.name}</b></div><span>${i.available?'2 €':'Indispo'}</span></div>`).join(''); go('product'); }
-function buildReviews(ctx){ const t=qs('#reviewsTrack'); const base=[{n:'Alexandre',t:'Activation rapide, rien à dire.',s:5},{n:'Lina',t:'Prix imbattable pour tester.',s:5},{n:'Yanis',t:'Interface claire et efficace.',s:4},{n:'Chloé',t:'Support réactif, top.',s:5},{n:'Mehdi',t:'Très simple à utiliser.',s:5},{n:'Zoé',t:'Ravie du service.',s:4},]; const list=[...base,...base]; t.innerHTML=list.map(r=>`<div class='review'><div class='stars'>${'★'.repeat(r.s)}${'☆'.repeat(5-r.s)}</div><b>${r.n}</b><div style='color:var(--muted);margin-top:6px'>${r.t}</div></div>`).join(''); }
+function openProduct(id){
+  const s=SERVICES.find(x=>x.id===id);
+  qs('#prodLeft').innerHTML=`
+    <div class="prod-head">
+      <div class="logo"><img src="${s.logo}" alt="${s.name}"></div>
+      <div><h2 style="margin:0">${s.name}</h2>
+      <div style="color:var(--muted)">${s.plan||''} — ${s.available?'Disponible':'Indisponible'}</div></div>
+    </div>
+    <p style="color:var(--muted);margin-top:4px">${s.desc||''}</p>
+    <div class="features">
+      <div>• Accès immédiat après validation.</div>
+      <div>• Lecture hors connexion selon le service.</div>
+      <div>• Annulable à tout moment.</div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <span class="was">${s.was||''}</span><span class="now">2 €</span>
+      <button class="btn icon ${!s.available?'disabled':''}" onclick="${s.available?`addToCart({type:'service',id:'${s.id}',name:'${s.name}',price:2})`:''}" aria-label="Ajouter"><span>+</span></button>
+    </div>`;
+  buildReviews(s.name);
+  qs('#prodRight').innerHTML=`<h3 style="margin:0 0 8px">À propos</h3><p style="color:var(--muted)">Découvrez ${s.name} en toute simplicité.</p>`;
+  go('product');
+}
+function openPack(id){
+  const pack=PACKS.find(p=>p.id===id);
+  const items=pack.items.map(i=>SERVICES.find(s=>s.id===i));
+  const hasOOS=items.some(i=>!i.available);
+  qs('#prodLeft').innerHTML=`
+    <div class="prod-head">
+      <div class="logo" style="display:flex;gap:6px;padding:10px">
+        ${items.slice(0,4).map(i=>`<img src='${i.logo}' style='width:26px;height:26px'>`).join('')}
+      </div>
+      <div><h2 style="margin:0">${pack.name}</h2><div style="color:var(--muted)">Inclut ${pack.items.length} services</div></div>
+    </div>
+    <p style="color:var(--muted)">Contenu : ${items.map(i=>i.name).join(', ')}.</p>
+    <div style="display:flex;gap:12px;align-items:center">
+      <span class="was">${fmt(Math.min(99,items.length*10))}</span>
+      <span class="now">${priceForItems(pack.items)} €</span>
+      <span class="ribbon ${hasOOS?'danger':''}">${hasOOS?'RUPTURE DE STOCK':'PACK PROMO'}</span>
+      <button class="btn icon ${hasOOS?'disabled':''}" onclick="${!hasOOS?`addToCart({type:'pack',id:'${pack.id}',name:'${pack.name}',price:${priceForItems(pack.items)}})`:''}" aria-label="Ajouter"><span>+</span></button>
+    </div>`;
+  buildReviews(pack.name);
+  qs('#prodRight').innerHTML=`<h3 style="margin:0 0 8px">Services inclus</h3>`+
+    items.map(i=>`<div class='line' style='margin:8px 0'><div style='display:flex;align-items:center;gap:10px'><img src="${i.logo}" style="width:22px;height:22px"><b>${i.name}</b></div><span>${i.available?'2 €':'Indispo'}</span></div>`).join('');
+  go('product');
+}
+function buildReviews(ctx){
+  const t=qs('#reviewsTrack');
+  const base=[{n:'Alexandre',t:'Activation rapide, rien à dire.',s:5},{n:'Lina',t:'Prix imbattable pour tester.',s:5},{n:'Yanis',t:'Interface claire et efficace.',s:4},{n:'Chloé',t:'Support réactif, top.',s:5},{n:'Mehdi',t:'Très simple à utiliser.',s:5},{n:'Zoé',t:'Ravie du service.',s:4},];
+  const list=[...base,...base];
+  t.innerHTML=list.map(r=>`<div class='review'><div class='stars'>${'★'.repeat(r.s)}${'☆'.repeat(5-r.s)}</div><b>${r.n}</b><div style='color:var(--muted);margin-top:6px'>${r.t}</div></div>`).join('');
+}
 
-/* Cart */
+/* Panier */
 let CART=JSON.parse(localStorage.getItem('pisto_cart')||'[]');
 function saveCart(){ localStorage.setItem('pisto_cart',JSON.stringify(CART)); }
 function renderCart(){ const list=qs('#cartList'); list.innerHTML=''; CART.forEach((it,idx)=>{ const line=document.createElement('div'); line.className='line'; line.innerHTML=`<div style="display:flex;align-items:center;gap:10px"><div class="logo" style="width:34px;height:34px;background:var(--panel)">${it.type==='pack'?'📦':'🎫'}</div><div><b>${it.name}</b><div style="color:var(--muted);font-size:13px">${it.type==='pack'?'Pack':'Abonnement'} — ${fmt(it.price)}</div></div></div><div class="x" data-i="${idx}">✕</div>`; list.appendChild(line);}); const total=CART.reduce((a,b)=>a+b.price,0); qs('#sum').textContent='Total : '+fmt(total); saveCart(); syncPayBtn(); }
 function addToCart(item){ CART.push(item); renderCart(); go('cart'); }
 qs('#cartList').addEventListener('click',e=>{ if(e.target.classList.contains('x')){ CART.splice(Number(e.target.dataset.i),1); renderCart(); }});
 
-/* Checkout */
+/* Paiement direct */
+const PAY_URL='https://t.trklinkx.com/click?pid=4830&offer_id=9127';
 const payBtn=qs('#payBtn');
 function syncPayBtn(){ payBtn.disabled = CART.length===0; }
-
-/* Ouvre le lien de paiement directement */
-payBtn.addEventListener('click',()=>{
-  if (CART.length===0) return;
-  window.open(PAY_URL,'_blank','noopener');
-});
+payBtn.addEventListener('click',()=>{ if(!CART.length) return; window.open(PAY_URL,'_blank','noopener'); });
 
 renderCart();
 </script>
